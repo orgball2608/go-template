@@ -1,0 +1,55 @@
+version: "3.8"
+services:
+  database:
+    image: mysql:8.0.34-debian
+    container_name: database
+    command: '--innodb_use_native_aio=0'
+    environment:
+      MYSQL_USER: docker
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: school
+    volumes:
+      - .docker/data/mysql:/data/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - app-tier
+    restart: always
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: redis
+    env_file:
+      - .env.docker
+    command: redis-server --save 60 1 --requirepass $REDIS_PASSWORD
+    volumes:
+      - .docker/data/redis:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - app-tier
+    restart: always
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app
+    env_file:
+      - .env.docker
+    ports:
+      - 5000:5000
+    volumes:
+      - ./logs/:/root/logs/
+    restart: unless-stopped
+    depends_on:
+      - database
+      - redis
+    networks:
+      - app-tier
+
+networks:
+  app-tier:
+    driver: bridge
+    name: app-tier
