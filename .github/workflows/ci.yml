@@ -14,19 +14,14 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
-        with:
-          go-version: ${{ matrix.go-version }}
-          cache: false
-      - run: go build ./cmd/main.go
-
-  test-cache:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
           cache: true
-      - run: go build ./cmd/main.go
+      - name: Run build
+        run: go build ./cmd/main.go
+      - name: Run tests
+        run: go test ./cmd/main.go
