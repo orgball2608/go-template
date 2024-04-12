@@ -4,6 +4,7 @@ import (
 	"elearning/config"
 	errorConstants "elearning/error"
 	jwtPkg "elearning/pkg/jwt"
+	"errors"
 	"fmt"
 	"time"
 
@@ -33,7 +34,7 @@ type LoginOutput struct {
 func (au *authUseCase) Login(ctx *gin.Context, input *LoginInput) (*LoginOutput, *errorConstants.ErrorCode) {
 	loginFailKey := fmt.Sprintf("loginFail-%s", input.Email)
 	loginFailedCountString, err := au.cacheRepository.Get(ctx, loginFailKey)
-	if err != nil && err != errorConstants.ErrKeyDoesNotExist {
+	if err != nil && !errors.Is(err, errorConstants.ErrKeyDoesNotExist) {
 		errCode := logPkg.Log(
 			ctx,
 			config.LogLevelError,

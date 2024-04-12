@@ -4,6 +4,7 @@ import (
 	"context"
 	"elearning/domain/repository"
 	redisDb "elearning/infra/redis"
+	"errors"
 	"time"
 
 	errorConstants "elearning/error"
@@ -23,7 +24,7 @@ func NewCacheRepository(db *redisDb.Database) repository.CacheRepository {
 
 func (r *cacheRepository) Get(ctx context.Context, key string) (string, error) {
 	data, err := r.db.Get(ctx, key).Result()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return "", errorConstants.ErrKeyDoesNotExist
 	}
 	if err != nil {

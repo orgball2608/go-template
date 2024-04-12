@@ -8,6 +8,8 @@ import (
 	"elearning/validations"
 	"fmt"
 	"github.com/gin-contrib/cors"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"net/http"
 
 	"net/http/httputil"
@@ -50,10 +52,19 @@ func InitRouter(
 		MaxAge:           12 * time.Hour,
 	}))
 	router.Use(gin.Recovery())
+
+	// Swagger
+	// Swagger
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	// Validations
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		v.RegisterValidation("customEmail", validations.CustomEmail)
-		v.RegisterValidation("customPassword", validations.CustomPassword)
+		if v.RegisterValidation("customEmail", validations.CustomEmail) != nil {
+			return nil
+		}
+		if v.RegisterValidation("customPassword", validations.CustomPassword) != nil {
+			return nil
+		}
 	}
 	apiRouter := router.Group("/api")
 	apiRouter.GET("/ping", func(c *gin.Context) {

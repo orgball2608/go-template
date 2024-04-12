@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"elearning/config"
+	"elearning/docs"
 	"elearning/infra/mysql"
 	"elearning/infra/mysql/repository"
 	asynq "elearning/infra/queue"
@@ -12,6 +13,7 @@ import (
 	"elearning/pkg/data"
 	stringPkg "elearning/pkg/hasher"
 	"elearning/routers"
+	"errors"
 	"net/http"
 	"os"
 	"os/signal"
@@ -64,6 +66,14 @@ func main() {
 			fmt.Printf("EnvKeyAndValue %s: '%v'\n", varName, varValue)
 		}
 	}
+
+	//Swagger 2.0 Meta Information
+	docs.SwaggerInfo.Title = "DDD API"
+	docs.SwaggerInfo.Description = "This is a DDD server."
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Host = "localhost:8080/api/v1"
+	docs.SwaggerInfo.BasePath = ""
+	docs.SwaggerInfo.Schemes = []string{"http"}
 
 	gin.SetMode(cfg.RunMode)
 	loggerStartServer.Infof("System is running with %s mode", cfg.RunMode)
@@ -135,7 +145,7 @@ func main() {
 		loggerStartServer.Info("Stopped serving on Services")
 	}()
 	loggerStartServer.Infof("Start HTTP Server Successfully")
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		loggerStartServer.Fatalf("Start HTTP Server Failed. Error: %s", err.Error())
 	}
 	<-done
